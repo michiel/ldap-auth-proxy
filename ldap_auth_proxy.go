@@ -200,6 +200,13 @@ func (p *LDAPAuthProxy) Authenticate(w http.ResponseWriter, r *http.Request) int
 
 	defer p.LDAPClient.Close()
 
+	err = p.LDAPClient.Conn.Bind(p.LDAPClient.BindDN, p.LDAPClient.BindPassword)
+
+	if err != nil {
+		traceWarning(w, fmt.Sprintf("Failed to bind: %s (%s, %s)", err.Error(), p.LDAPClient.BindDN, p.LDAPClient.BindPassword))
+		return http.StatusUnauthorized
+	}
+
 	authenticated, attributes, err := p.LDAPClient.Authenticate(pair[0], pair[1])
 
 	if err != nil {
